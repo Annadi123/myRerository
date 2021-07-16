@@ -1,52 +1,55 @@
 package com.team.controller;
 
 import java.util.List;
+
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.team.model.Employee;
-import com.team.repository.EmployeeRepository;
+import com.team.service.EmployeeService;
 
 @RestController
 @EntityScan("com.team")
 @EnableJpaRepositories("com.team.repository")
+@Transactional
 public class EmployeeController {
-
-	@Autowired
-	private com.team.repository.EmployeeRepository employeeRepository;
-    public void setEmployeeRepository(EmployeeRepository employeeRepository) {
-		this.employeeRepository = employeeRepository;
-	}
-	@GetMapping("/")
-	public List<Employee> listUser() {
-		return employeeRepository.findAll();
-	}
-
-	@PostMapping("/add")
-	public Employee saveUser(@RequestBody Employee user) {
-		return employeeRepository.save(user);
-	}
-
-	@GetMapping("/show/{id}")
-	public Employee getOneUSer(@PathVariable Long id) {
-		return employeeRepository.findById(id).get();
-	}
-
-	@GetMapping("/users")
-	public Employee getUserDetails(@RequestParam(required = true) Long uname) {
-		return employeeRepository.findById(uname).get();
-
-	}
 	
-	@PutMapping("/show/{id}")
-	public Employee editUser(@PathVariable Long id) {
-		return employeeRepository.findById(id).get();
-	}
+    @Autowired
+    private EmployeeService employeeService;
+    
+    @GetMapping("/")
+    public String getMessage() {
+    	return "Hello";
+    }
+    @GetMapping("/get-employees")
+    public ResponseEntity<List<Employee>> getAllEmployees() {
+        List<Employee> employees = employeeService.getAllEmployees();
+        return new ResponseEntity<>(employees, HttpStatus.OK);
+    }
+    @PostMapping("/employee")
+    public ResponseEntity<Employee> saveEmployee(@RequestBody Employee employee) {
+        Employee emp = employeeService.addEmployee(employee);
+        return new ResponseEntity<>(emp, HttpStatus.OK);
+    }
+    @PutMapping("/employee")
+    public ResponseEntity<Employee> updateEmployee(@RequestBody Employee employee) {
+        Employee emp = employeeService.editEmployees(employee);
+        return new ResponseEntity<>(emp, HttpStatus.OK);
+    }
+    @DeleteMapping("/employee")
+    public ResponseEntity<String> deleteEmployee(@RequestParam(name = "employeeId") Integer employeeId) {
+        employeeService.deleteEmployees(employeeId);
+        return new ResponseEntity<>("Employee with ID :" + employeeId + " deleted successfully", HttpStatus.OK);
+    }
 }
